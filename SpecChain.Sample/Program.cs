@@ -11,7 +11,9 @@ namespace SpecChain.Sample {
 
         [Spec]
         public void Test() {
-            Console.WriteLine("Hello, world");
+            Spec.Assert(true);
+
+            Spec.Assert(false);
         }
     }
 }

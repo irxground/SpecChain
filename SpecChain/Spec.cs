@@ -3,13 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Threading;
 
 namespace SpecChain {
     public class Spec {
 
+        private static SpecRunner _Runner = null;
+
+        private static SpecRunner Runner { get { return _Runner ?? ThrowNoRunner(); } }
+        private static SpecRunner ThrowNoRunner() {
+            throw new InvalidOperationException("Please run spec.");
+        }
+
+        #region Runner
 
         public static void RunAllInAssembly<T>() {
-            RunAllInAssembly(typeof (T));
+            RunAllInAssembly(typeof(T));
         }
 
         public static void RunAllInAssembly(Type type) {
@@ -17,19 +26,31 @@ namespace SpecChain {
         }
 
         public static void RunAllInAssembly(Assembly assembly) {
-            var args = new object[] {};
-            foreach (var type in assembly.GetTypes()) {
-                object obj = null;
-                foreach (var m in type.GetMethods()) {
-                    if (m.GetCustomAttributes(typeof(SpecAttribute), false).Length > 0) {
-                        if (m.IsStatic) {
-                            m.Invoke(null, args);
-                        } else {
-                            obj = obj ?? Activator.CreateInstance(type);
-                            m.Invoke(obj, args);
-                        }
-                    }
+            var runner = new SpecRunner();
+            try {
+                if (Interlocked.CompareExchange(ref _Runner, runner, null) != null) {
+                    Console.Error.WriteLine("Don't run test parallel.");
+                    Environment.Exit(1);
                 }
+                runner.RunAllInAssembly(assembly);
+            }
+            finally {
+                if (Interlocked.Exchange(ref _Runner, null) != runner) {
+                    Console.Error.WriteLine("Invalid State");
+                    Environment.Exit(1);
+                }
+            }
+            runner.ShowResult();
+        }
+
+        #endregion
+
+        public static void Assert(bool result) {
+            if (result) {
+                Runner.Pass();
+            } else {
+                Runner.Fail();
+                throw new AssertFailureException();
             }
         }
     }
