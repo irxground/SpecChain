@@ -13,37 +13,31 @@ namespace SpecChain {
                     var obj = pair.Item1;
                     var mInfo = pair.Item2;
                     mInfo.Invoke(obj, args);
+                    Pass();
                 }
-                catch (AssertFailureException e) {
-
+                catch (AssertFailureException) {
+                    Fail();
                 }
-                catch (Exception e) {
-
+                catch (Exception) {
+                    Fail();
                 }
             }
         }
 
         private IEnumerable<Tuple<object, MethodInfo>> AllExecutePairInAssembly(Assembly assembly) {
             foreach (var type in assembly.GetTypes()) {
-                object obj = null;
                 foreach (var m in type.GetMethods()) {
                     if (m.GetCustomAttributes(typeof(SpecAttribute), false).Length > 0) {
-                        if (m.IsStatic) {
-                            yield return Tuple.Create(null as object, m);
-                        }
-                        else {
-                            obj = obj ?? Activator.CreateInstance(type);
-                            yield return Tuple.Create(obj, m);
-                        }
+                        yield return Tuple.Create(m.IsStatic ? null : Activator.CreateInstance(type), m);
                     }
                 }
             }
         }
 
-        public void Pass() {
+        private void Pass() {
             ShowMsgWithColor(ConsoleColor.Green, ".");
         }
-        public void Fail() {
+        private void Fail() {
             ShowMsgWithColor(ConsoleColor.Red, "F");
         }
 
@@ -52,7 +46,8 @@ namespace SpecChain {
             try {
                 Console.ForegroundColor = color;
                 Console.Write(message);
-            } finally {
+            }
+            finally {
                 Console.ForegroundColor = backup;
             }
         }

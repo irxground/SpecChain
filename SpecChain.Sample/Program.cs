@@ -10,9 +10,12 @@ namespace SpecChain.Sample {
         }
 
         [Spec]
-        public void Test() {
+        public void AlwaysPass() {
             Spec.Assert(true);
+        }
 
+        [Spec]
+        public void AlwaysFail() {
             Spec.Assert(false);
         }
     }

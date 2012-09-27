@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Threading;
+using System.Diagnostics;
 
 namespace SpecChain {
     public class Spec {
@@ -45,11 +46,9 @@ namespace SpecChain {
 
         #endregion
 
+        [DebuggerStepThrough]
         public static void Assert(bool result) {
-            if (result) {
-                Runner.Pass();
-            } else {
-                Runner.Fail();
+            if (result == false) {
                 throw new AssertFailureException();
             }
         }
