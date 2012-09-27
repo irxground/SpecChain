@@ -15,6 +15,11 @@ namespace SpecChain.Sample {
         }
 
         [Spec]
+        public static void StaticMethodAlsoOK() {
+            Spec.Assert(true);
+        }
+
+        [Spec]
         public void AlwaysFail() {
             Spec.Assert(false);
         }

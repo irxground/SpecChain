@@ -41,7 +41,6 @@ namespace SpecChain {
                     Environment.Exit(1);
                 }
             }
-            runner.ShowResult();
         }
 
         #endregion
